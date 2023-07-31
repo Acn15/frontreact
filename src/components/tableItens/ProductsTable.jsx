@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import api from '../../api';
+import ProductTableRow from '../ProductTableRow';
+import Cart from '../carrinho/Carrinho';
+import CheckoutButton from '../Checkout';
 
 const ProductTable = () => {
   const [products, setProducts] = useState([]);
@@ -11,6 +14,7 @@ const ProductTable = () => {
     api.get('/products')
       .then(response => {
         setProducts(response.data);
+        console.log("Dessa vez eu não irei decepcionar!")
       })
       .catch(error => {
         console.error('Erro ao buscar os produtos:', error);
@@ -30,14 +34,13 @@ const ProductTable = () => {
     }
   };
 
-  const calculateTotalPrice = () => {
-    return cart.reduce((total, item) => total + item.price, 0);
+  const removeProductFromCart = (productId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+    toast.warn('Produto removido do carrinho!', {
+      position: 'top-center',
+    });
   };
 
-  const calculateTotalWeight = () => {
-    return cart.reduce((total, item) => total + item.weight, 0);
-  };
-  
   return (
     <div>
       <h2>Tabela de Produtos</h2>
@@ -51,35 +54,24 @@ const ProductTable = () => {
         </thead>
         <tbody>
           {products.map(product => (
-            <tr key={product.id}>
-              <td>{product.name}</td>
-              <td>{product.price}</td>
-              <td>{product.weight}</td>
-              <td>
-                <button onClick={() => addProductToCart(product)}>
-                  Adicionar ao Carrinho
-                </button>
-              </td>
-            </tr>
+            <ProductTableRow
+              key={product.id}
+              product={product}
+              onAddToCart={addProductToCart}
+            />
           ))}
+          
         </tbody>
       </table>
 
-      <div>
-        <h2>Carrinho</h2>
-        <ul>
-          {cart.map(item => (
-            <li key={item.id}>
-              {item.name} - R${item.price}; {item.weight}Kg
-            </li>
-          ))}
-        </ul>
-        <p>Total Price: R${calculateTotalPrice()}</p>
-        <p>Total Weight: {calculateTotalWeight()}Kg</p>
-      </div>
+      <Cart cart={cart} onRemoveFromCart={removeProductFromCart} />
 
       <ToastContainer />
+      <div>
+      <CheckoutButton cart={cart} />
     </div>
+    </div>
+    
   );
 };
 

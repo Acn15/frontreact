@@ -1,33 +1,48 @@
-
 import PropTypes from 'prop-types';
 
-const Checkout = ({ cart }) => {
-  const calculateTotal = () => {
-    let totalPrice = 0;
-    let totalWeight = 0;
-
-    cart.forEach(item => {
-      totalPrice += item.price;
-      totalWeight += item.weight;
-    });
-
-    return { totalPrice, totalWeight };
+const Cart = ({ cart, onRemoveFromCart }) => {
+  const calculateTotalPrice = () => {
+    return cart.reduce((total, item) => total + item.price, 0);
   };
 
-  const { totalPrice, totalWeight } = calculateTotal();
+  const calculateTotalWeight = () => {
+    return cart.reduce((total, item) => total + item.weight, 0);
+  };
+
+  const calculateShipping = () => {
+    return (calculateTotalWeight() * 0.1).toFixed(2);
+  };
 
   return (
     <div>
-      <h2>Checkout</h2>
-      <div>
-        <p>Total de Preço: R$ {totalPrice.toFixed(2)}</p>
-        <p>Total de Peso: {totalWeight.toFixed(2)} kg</p>
-      </div>
+      <h2>Carrinho</h2>
+      <ul>
+        {cart.map(item => (
+          <li key={item.id}>
+            {item.name} - R${item.price}; {item.weight}Kg
+            <button onClick={() => onRemoveFromCart(item.id)}>
+              Remover do Carrinho
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p>Total Price: R${calculateTotalPrice()}</p>
+      <p>Total Weight: {calculateTotalWeight()}Kg</p>
+      <p>Frete: R${calculateShipping()}</p>
     </div>
   );
 };
 
-Checkout.propTypes = {
-  cart: PropTypes.arrayOf(PropTypes.object).isRequired,
-}
-export default Checkout;
+Cart.propTypes = {
+  cart: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      price: PropTypes.number.isRequired,
+      weight: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  onRemoveFromCart: PropTypes.func.isRequired,
+};
+
+export default Cart;
